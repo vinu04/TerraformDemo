@@ -1,12 +1,11 @@
 # Require TF version to most recent
 terraform {
-  required_version = "~> 0.12.8"
+  required_version = "0.14.9"
 }
 
 # Download any stable version in AWS provider of 2.19.0 or higher in 2.19 train
 provider "aws" {
-  version = "~> 2.27.0"
-  region  = "us-east-1"
+   region  = "us-east-1"
 }
 
 # Build the VPC
