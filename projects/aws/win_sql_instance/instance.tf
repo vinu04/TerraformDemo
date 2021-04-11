@@ -15,12 +15,7 @@ resource "aws_security_group" "default" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  ingress {
-    from_port   = 8088
-    to_port     = 8088
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+  
 
   # outbound internet access
   egress {
@@ -31,13 +26,13 @@ resource "aws_security_group" "default" {
   }
 }
 # Lookup the correct AMI based on the region specified
-data "aws_ami" "amazon_windows_2019_std" {
+data "aws_ami" "amazon_windows_2019_sql_2017_std" {
   most_recent = true
   owners      = ["amazon"]
 
   filter {
     name   = "name"
-    values = ["Windows_Server-2019-English-*-*"]
+    values = ["Windows_Server-2019-English-Full-SQL_2017_Standard-*"]
   }
 }
 
@@ -54,9 +49,24 @@ resource "aws_instance" "winrm" {
     timeout = "10m"
   }
 
-  instance_type = "t2.micro"
-  ami           = data.aws_ami.amazon_windows_2019_std.image_id
- 
+ instance_type = "m4.large"
+ ami           = data.aws_ami.amazon_windows_2019_sql_2017_std.image_id
+
+  root_block_device {
+      volume_type = "gp2"
+      volume_size = 80
+      delete_on_termination = true
+    }
+
+    # Slave Storage
+    ebs_block_device {
+      device_name = "/dev/xvdb"
+      volume_type = "sc1"
+      volume_size = 500
+      encrypted = "true"
+      delete_on_termination = true
+    }
+
   associate_public_ip_address = "true"
   vpc_security_group_ids = [aws_security_group.default.id]
   #subnet_id              = "subnet-eddcdzz4"
@@ -83,9 +93,38 @@ resource "aws_instance" "winrm" {
   # Set Administrator password
   $admin = [adsi]("WinNT://./administrator, user")
   $admin.psbase.invoke("SetPassword", "${var.INSTANCE_PASSWORD}")
-  
-  # Install IIS Features and Roles
-  Install-WindowsFeature -name Web-Server -IncludeManagementTools
+    
+  Initialize-Disk 1 -PartitionStyle GPT
+    New-Partition –DiskNumber 1 -UseMaximumSize -AssignDriveLetter
+    Format-Volume -DriveLetter D -FileSystem NTFS -NewFileSystemLabel SQL-Stuff
+    New-Item -ItemType directory -Path D:\Data
+    New-Item -ItemType directory -Path D:\Backup
+    New-Item -ItemType directory -Path D:\Log
+    # Set Default Paths for MSSQL Dirs
+    $DataRegKeyPath = "HKLM:\Software\Microsoft\Microsoft SQL Server\MSSQL14.MSSQLSERVER\MSSQLServer"
+    $DataRegKeyName = "DefaultData"
+    $DataDirectory = "D:\Data"
+      If ((Get-ItemProperty -Path $DataRegKeyPath -Name $DataRegKeyName -ErrorAction SilentlyContinue) -eq $null) {
+      New-ItemProperty -Path $DataRegKeyPath -Name $DataRegKeyName -PropertyType String -Value $DataDirectory
+        } Else {
+        Set-ItemProperty -Path $DataRegKeyPath -Name $DataRegKeyName -Value $DataDirectory
+    }
+    $LogRegKeyPath = "HKLM:\Software\Microsoft\Microsoft SQL Server\MSSQL14.MSSQLSERVER\MSSQLServer"
+    $LogRegKeyName = "DefaultLog"
+    $LogDirectory = "D:\Log"
+      If ((Get-ItemProperty -Path $LogRegKeyPath -Name $LogRegKeyName -ErrorAction SilentlyContinue) -eq $null) {
+      New-ItemProperty -Path $LogRegKeyPath -Name $LogRegKeyName -PropertyType String -Value $LogDirectory
+        } Else {
+        Set-ItemProperty -Path $LogRegKeyPath -Name $LogRegKeyName -Value $LogDirectory
+    }
+    $BackupRegKeyPath = "HKLM:\Software\Microsoft\Microsoft SQL Server\MSSQL14.MSSQLSERVER\MSSQLServer"
+    $BackupRegKeyName = "BackupDirectory"
+    $BackupDirectory = "D:\Backup"
+      If ((Get-ItemProperty -Path $BackupRegKeyPath -Name $BackupRegKeyName -ErrorAction SilentlyContinue) -eq $null) {
+      New-ItemProperty -Path $BackupRegKeyPath -Name $BackupRegKeyName -PropertyType String -Value $BackupDirectory
+        } Else {
+        Set-ItemProperty -Path $BackupRegKeyPath -Name $BackupRegKeyName -Value $BackupDirectory
+    }
 
   # Disable IE Security Function
   function Disable-InternetExplorerESC {
@@ -109,6 +148,7 @@ resource "aws_instance" "winrm" {
     Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "ConsentPromptBehaviorAdmin" -Value 00000000 -Force
     Write-Host "User Access Control (UAC) has been disabled." -ForegroundColor Green    
   }
+  
   # Disable IE Sec and UAC
   Disable-InternetExplorerESC
   Disable-UserAccessControl
