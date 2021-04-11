@@ -152,10 +152,10 @@ resource "aws_instance" "winrm" {
   # Disable IE Sec and UAC
   Disable-InternetExplorerESC
   Disable-UserAccessControl
-  Setup-MyWebSite
+  #Setup-MyWebSite
   #Set Time Zone
   Set-TimeZone -id "Singapore Standard Time"
-
+  
   Restart-Computer
 
 </powershell>
