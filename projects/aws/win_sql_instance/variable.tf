@@ -5,14 +5,14 @@ variable "AWS_REGION" {
 }
 
 variable "PATH_TO_PRIVATE_KEY" {
-  default = ("./mykey")
+  default = ("./mykeySQL")
 }
 variable "KEY_NAME" { 
-  default = "mykey" 
+  default = "mykeySQL" 
 }
 
 variable "PUBLIC_KEY" {
-    default = ("./mykey.pub")
+    default = ("./mykeySQL.pub")
 }
 
 

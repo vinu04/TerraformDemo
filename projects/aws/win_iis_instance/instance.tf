@@ -21,7 +21,12 @@ resource "aws_security_group" "default" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-
+  ingress {
+    from_port   = 3389
+    to_port     = 3389
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
   # outbound internet access
   egress {
     from_port   = 0
@@ -100,7 +105,7 @@ resource "aws_instance" "winrm" {
   function Setup-MyWebSite {
      New-Item c:\INETPUB\MYWEBSITE -ItemType Directory
     New-Item c:\INETPUB\Mywebsite\index.html -ItemType File
-    Set-Content c:\INETPUB\Mywebsite\index.html '<!DOCTYPE html><html><head><title>IIS Administration With PowerShell Demo</title></head><body><h1>IIS Administration with PowerShell Demo</h1><p>Thank you for reading this post on how to administer IIS with PowerShell!</p><p>This page was created using the newer IISAdministration PowerShell module.</p><h2>First Steps</h2><p>Keep calm and learn PowerShell.</p></body></html>'
+    Set-Content c:\INETPUB\Mywebsite\index.html '<!DOCTYPE html><html><head><title>IIS Deployment Automation Demo for UOB banking Group</title></head><body><h1>IIS Administration Automation Demo for UOB Banking Group</h1><p>Thank you for reading this post on how to administer IIS with Terraform!</p><p>This page was created using the newer IISAdministration PowerShell module + Terraform Deployment.</p><h2>First Steps</h2><p>Keep calm and learn PowerShell.</p></body></html>'
     New-IISSite -Name 'MyWebsite' -PhysicalPath 'c:\INETPUB\Mywebsite\' -BindingInformation "*:8088:"
   }
 

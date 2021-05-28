@@ -6,11 +6,11 @@ variable "AWS_REGION" {
 
 
 variable "PATH_TO_PRIVATE_KEY" {
-  default = ("./mykey")
+  default = ("./mykeyLinux")
 }
 
 variable "PUBLIC_KEY" {
-    default = ("./mykey.pub")
+    default = ("./mykeyLinux.pub")
 }
 
 variable "INSTANCE_USERNAME" {

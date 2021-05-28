@@ -1,11 +1,11 @@
-resource "aws_key_pair" "mykey" {
-  key_name = "mykey"
+resource "aws_key_pair" "mykeySQL" {
+  key_name = "mykeySQL"
   public_key = file(var.PUBLIC_KEY)
 }
 
 # Default security group to access the instances via WinRM over HTTP and HTTPS
 resource "aws_security_group" "default" {
-  name        = "terraform_example"
+  name        = "terraform_example_SQL"
   description = "Windows Test using terraform"
 
   # WinRM access from anywhere

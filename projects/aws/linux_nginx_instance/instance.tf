@@ -1,6 +1,6 @@
 
-resource "aws_key_pair" "mykey" {
-  key_name = "mykey"
+resource "aws_key_pair" "mykeyLinux" {
+  key_name = "mykeyLinux"
   public_key = file(var.PUBLIC_KEY)
 }
 
