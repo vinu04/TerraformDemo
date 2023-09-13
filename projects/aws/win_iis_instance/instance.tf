@@ -15,6 +15,7 @@ resource "aws_security_group" "default" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+  
   ingress {
     from_port   = 8088
     to_port     = 8088
@@ -22,6 +23,12 @@ resource "aws_security_group" "default" {
     cidr_blocks = ["0.0.0.0/0"]
   }
   
+  ingress {
+    from_port   = 3389
+    to_port     = 3389
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
   
   # outbound internet access
   egress {
@@ -32,13 +39,12 @@ resource "aws_security_group" "default" {
   }
 }
 # Lookup the correct AMI based on the region specified
-data "aws_ami" "amazon_windows_2019_std" {
+data "aws_ami" "windows-2022" {
   most_recent = true
   owners      = ["amazon"]
-
   filter {
     name   = "name"
-    values = ["Windows_Server-2019-English-*-*"]
+    values = ["Windows_Server-2022-English-Core-Base*"]
   }
 }
 
@@ -56,7 +62,7 @@ resource "aws_instance" "winrm" {
   }
 
   instance_type = "t2.micro"
-  ami           = data.aws_ami.amazon_windows_2019_std.image_id
+  ami           = data.aws_ami.windows-2022.image_id
  
   associate_public_ip_address = "true"
   vpc_security_group_ids = [aws_security_group.default.id]
@@ -101,7 +107,7 @@ resource "aws_instance" "winrm" {
   function Setup-MyWebSite {
      New-Item c:\INETPUB\MYWEBSITE -ItemType Directory
     New-Item c:\INETPUB\Mywebsite\index.html -ItemType File
-    Set-Content c:\INETPUB\Mywebsite\index.html '<!DOCTYPE html><html><head><title>IIS Deployment Automation Demo for UOB banking Group</title></head><body><h1>IIS Administration Automation Demo for UOB Banking Group</h1><p>Thank you for reading this post on how to administer IIS with Terraform!</p><p>This page was created using the newer IISAdministration PowerShell module + Terraform Deployment.</p><h2>First Steps</h2><p>Keep calm and learn PowerShell.</p></body></html>'
+    Set-Content c:\INETPUB\Mywebsite\index.html '<!DOCTYPE html><html><head><title>IIS Deployment Automation Demo for HSBC banking Group</title></head><body><h1>IIS Administration Automation Demo for HSBC Banking Group</h1><p>Thank you for reading this post on how to administer IIS with Terraform!</p><p>This page was created using the newer IISAdministration PowerShell module + Terraform Deployment.</p><h2>First Steps</h2><p>Keep calm and learn PowerShell.</p></body></html>'
     New-IISSite -Name 'MyWebsite' -PhysicalPath 'c:\INETPUB\Mywebsite\' -BindingInformation "*:8088:"
   }
 
@@ -115,7 +121,7 @@ resource "aws_instance" "winrm" {
   Disable-UserAccessControl
   Setup-MyWebSite
   #Set Time Zone
-  Set-TimeZone -id "Singapore Standard Time"
+  Set-TimeZone -id "India Standard Time"
 
   Restart-Computer
 

@@ -15,6 +15,21 @@ resource "aws_security_group" "default" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  ingress {
+    from_port   = 8088
+    to_port     = 8088
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+    ingress {
+    from_port   = 3389
+    to_port     = 3389
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  
   
 
   # outbound internet access
@@ -62,7 +77,7 @@ resource "aws_instance" "winrm" {
     ebs_block_device {
       device_name = "/dev/xvdb"
       volume_type = "sc1"
-      volume_size = 500
+      volume_size = 700
       encrypted = "true"
       delete_on_termination = true
     }
